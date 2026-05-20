@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vercel/
+
+# Astro
+.astro/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

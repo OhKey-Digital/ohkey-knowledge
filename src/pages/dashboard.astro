@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { DashboardApp } from '../components/dashboard/DashboardApp';
+---
+
+<BaseLayout
+  title="Dashboard"
+  description="Analiza tu rendimiento y nivel de conocimiento en detalle."
+>
+  <div class="container">
+    <DashboardApp client:only="react" />
+  </div>
+</BaseLayout>

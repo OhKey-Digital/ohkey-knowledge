@@ -1,0 +1,142 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Plataforma interactiva de evaluación de conocimiento con análisis por niveles.' } = Astro.props;
+const fullTitle = `${title} · OhKey Knowledge`;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a href="/" class="brand" aria-label="OhKey Knowledge - Inicio">
+          <span class="brand-icon" aria-hidden="true">🔑</span>
+          <span class="brand-name">
+            <span class="brand-oh">Oh</span><span class="brand-key">Key</span>
+            <span class="brand-subtitle">Knowledge</span>
+          </span>
+        </a>
+        <nav class="site-nav" aria-label="Navegación principal">
+          <a href="/" class="nav-link">Subir Quiz</a>
+          <a href="/dashboard" class="nav-link">Resultados</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>OhKey Knowledge &copy; {new Date().getFullYear()} &mdash; Evaluación inteligente de conocimiento</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding-block: 1rem;
+    background: rgba(29, 25, 76, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    font-size: 1.5rem;
+  }
+
+  .brand-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: baseline;
+    gap: 0.1rem;
+  }
+
+  .brand-oh {
+    color: var(--color-accent-light);
+  }
+
+  .brand-key {
+    color: var(--color-accent-vibrant);
+  }
+
+  .brand-subtitle {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-left: 0.35rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+  }
+
+  .nav-link:hover {
+    color: var(--color-text-primary);
+  }
+
+  main {
+    min-height: calc(100vh - 130px);
+    padding-block: 3rem;
+  }
+
+  .site-footer {
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+</style>

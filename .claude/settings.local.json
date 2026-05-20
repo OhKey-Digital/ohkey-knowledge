@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm approve-builds *)",
+      "Bash(pnpm install *)",
+      "Bash(PNPM_CONFIG_IGNORE_SCRIPTS=true pnpm install)",
+      "Bash(pnpm astro *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm dev *)"
+    ]
+  }
+}

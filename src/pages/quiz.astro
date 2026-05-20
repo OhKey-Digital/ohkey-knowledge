@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { QuizApp } from '../components/quiz/QuizApp';
+---
+
+<BaseLayout
+  title="Quiz"
+  description="Responde las preguntas del quiz y descubre tu nivel de conocimiento."
+>
+  <div class="container">
+    <QuizApp client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  .container {
+    padding-block: 0;
+  }
+</style>
