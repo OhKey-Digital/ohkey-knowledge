@@ -165,7 +165,7 @@ export function CategoryChart({ stats }: CategoryChartProps) {
           },
           animation: { duration: 900 },
         }}
-        style={{ minHeight: '220px' }}
+        style={{ minHeight: '220px', maxHeight: '400px' }}
       />
     </div>
   );
@@ -234,7 +234,7 @@ export function DifficultyChart({ stats }: DifficultyChartProps) {
           },
           animation: { duration: 900 },
         }}
-        style={{ minHeight: '200px' }}
+        style={{ minHeight: '200px', maxHeight: '380px' }}
       />
     </div>
   );
