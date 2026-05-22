@@ -1,0 +1,35 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { QuizUploader } from '../../../components/admin/QuizUploader';
+---
+
+<AdminLayout title="Nuevo Quiz">
+  <header class="page-header">
+    <div>
+      <a href="/admin" class="back-link">← Volver</a>
+      <h1 class="page-title">Crear Quiz</h1>
+      <p class="page-sub">Sube un archivo Excel para generar un quiz publicable.</p>
+    </div>
+  </header>
+
+  <QuizUploader client:load />
+</AdminLayout>
+
+<style>
+  .page-header { margin-bottom: 2rem; }
+  .back-link {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+  .back-link:hover { color: var(--color-text-secondary); }
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+  .page-sub { color: var(--color-text-secondary); font-size: 0.9rem; }
+</style>

@@ -1,0 +1,54 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { QuizList } from '../../components/admin/QuizList';
+---
+
+<AdminLayout title="Dashboard">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Administra y publica quizzes para tus participantes.</p>
+    </div>
+    <a href="/admin/quiz/new" class="btn-primary">+ Nuevo Quiz</a>
+  </header>
+
+  <QuizList client:load />
+</AdminLayout>
+
+<style>
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .page-sub {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.25rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background var(--transition-fast);
+  }
+
+  .btn-primary:hover { background: var(--color-primary-hover); }
+</style>
