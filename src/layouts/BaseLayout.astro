@@ -37,8 +37,9 @@ const fullTitle = `${title} · OhKey Knowledge`;
           </span>
         </a>
         <nav class="site-nav" aria-label="Navegación principal">
-          <a href="/" class="nav-link">Subir Quiz</a>
-          <a href="/dashboard" class="nav-link">Resultados</a>
+          <a href="/" class="nav-link">Inicio</a>
+          <a href="/quiz" class="nav-link">Quiz</a>
+          <a href="/admin" class="nav-link nav-link--admin">Admin</a>
         </nav>
       </div>
     </header>
@@ -125,6 +126,19 @@ const fullTitle = `${title} · OhKey Knowledge`;
 
   .nav-link:hover {
     color: var(--color-text-primary);
+  }
+
+  .nav-link--admin {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.2rem 0.6rem;
+  }
+
+  .nav-link--admin:hover {
+    border-color: rgba(169, 178, 255, 0.3);
+    color: var(--color-accent-light);
   }
 
   main {
