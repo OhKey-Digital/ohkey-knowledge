@@ -1,0 +1,37 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { StudentHistory } from '../../../components/admin/StudentHistory';
+
+const { id } = Astro.params;
+---
+
+<AdminLayout title="Historial del estudiante">
+  <header class="page-header">
+    <div>
+      <a href="/admin/results" class="back-link">← Volver a Resultados</a>
+      <h1 class="page-title">Historial del estudiante</h1>
+    </div>
+  </header>
+
+  <StudentHistory studentId={id!} client:load />
+</AdminLayout>
+
+<style>
+  .page-header { margin-bottom: 2rem; }
+
+  .back-link {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+
+  .back-link:hover { color: var(--color-text-secondary); }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+  }
+</style>

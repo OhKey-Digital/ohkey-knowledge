@@ -1,0 +1,38 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { ResultsTable } from '../../components/admin/ResultsTable';
+---
+
+<AdminLayout title="Resultados de participantes">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Resultados</h1>
+      <p class="page-sub">Historial de todos los envíos con búsqueda por nombre de estudiante.</p>
+    </div>
+  </header>
+
+  <ResultsTable client:load />
+</AdminLayout>
+
+<style>
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .page-sub {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
+</style>
