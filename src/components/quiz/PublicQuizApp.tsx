@@ -22,7 +22,9 @@ interface SubmitResult {
   time_spent_sec: number;
 }
 
-type Phase = 'checking' | 'already_done' | 'active' | 'submitting' | 'done' | 'error';
+type Phase = 'checking' | 'identify' | 'already_done' | 'active' | 'submitting' | 'done' | 'error';
+
+const STUDENT_NAME_KEY = 'ohkey_student_name';
 
 function getCookieToken(): string {
   const existing = document.cookie.split(';').find(c => c.trim().startsWith('ohkey_token='));
@@ -38,6 +40,7 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Array<{ questionId: string; selectedAnswer: AnswerKey | null; timeSpentMs: number }>>([]);
   const [result, setResult] = useState<SubmitResult | null>(null);
+  const [studentName, setStudentName] = useState('');
   const [existingSessionId, setExistingSessionId] = useState<string | null>(null);
   const startTimeRef = useRef(Date.now());
   const questionStartRef = useRef(Date.now());
@@ -57,14 +60,14 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
           setExistingSessionId(data.sessionId);
           setPhase('already_done');
         } else {
-          startTimeRef.current = Date.now();
-          questionStartRef.current = Date.now();
-          setPhase('active');
+          // Precargar nombre si el estudiante ya participó en otro quiz
+          const saved = localStorage.getItem(STUDENT_NAME_KEY) ?? '';
+          setStudentName(saved);
+          setPhase('identify');
         }
       })
       .catch(() => {
-        startTimeRef.current = Date.now();
-        setPhase('active');
+        setPhase('identify');
       });
   }, [quiz.id]);
 
@@ -77,6 +80,14 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
     return () => clearInterval(id);
   }, [phase]);
 
+  const handleIdentify = (name: string) => {
+    setStudentName(name);
+    localStorage.setItem(STUDENT_NAME_KEY, name);
+    startTimeRef.current = Date.now();
+    questionStartRef.current = Date.now();
+    setPhase('active');
+  };
+
   const handleAnswer = async (selected: AnswerKey | null) => {
     const timeSpentMs = Date.now() - questionStartRef.current;
     const newAnswer = { questionId: quiz.questions[currentIndex]!.id, selectedAnswer: selected, timeSpentMs };
@@ -84,7 +95,6 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
     setAnswers(newAnswers);
 
     if (currentIndex + 1 >= quiz.questions.length) {
-      // Último: enviar
       setPhase('submitting');
       const token = getCookieToken();
       const timeSpentSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
@@ -92,11 +102,10 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
         const res = await fetch('/api/quiz/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quizId: quiz.id, cookieToken: token, answers: newAnswers, timeSpentSec }),
+          body: JSON.stringify({ quizId: quiz.id, cookieToken: token, studentName, answers: newAnswers, timeSpentSec }),
         });
         const data = await res.json();
         if (res.status === 409) {
-          // Ya completado (race condition)
           setExistingSessionId(data.sessionId ?? null);
           setPhase('already_done');
         } else if (res.ok) {
@@ -121,6 +130,10 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
         <p className={styles.centerText}>Preparando quiz…</p>
       </div>
     );
+  }
+
+  if (phase === 'identify') {
+    return <IdentifyForm initialName={studentName} quizTitle={quiz.title} onSubmit={handleIdentify} />;
   }
 
   if (phase === 'already_done') {
@@ -164,7 +177,7 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
   }
 
   if (phase === 'done' && result) {
-    return <ResultView result={result} quizTitle={quiz.title} />;
+    return <ResultView result={result} quizTitle={quiz.title} studentName={studentName} />;
   }
 
   const currentQuestion = quiz.questions[currentIndex];
@@ -188,7 +201,81 @@ export function PublicQuizApp({ quiz }: { quiz: PublicQuiz }) {
   );
 }
 
-function ResultView({ result, quizTitle }: { result: SubmitResult; quizTitle: string }) {
+// --- Formulario de identificación ---
+
+function IdentifyForm({ initialName, quizTitle, onSubmit }: { initialName: string; quizTitle: string; onSubmit: (name: string) => void }) {
+  const [name, setName] = useState(initialName);
+  const [error, setError] = useState('');
+
+  const validate = (value: string): string => {
+    const trimmed = value.trim();
+    if (trimmed.length < 3) return 'El nombre debe tener al menos 3 caracteres';
+    if (!/\s/.test(trimmed)) return 'Ingresa nombre y apellido';
+    return '';
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const err = validate(name);
+    if (err) { setError(err); return; }
+    onSubmit(name.trim());
+  };
+
+  return (
+    <div style={{ maxWidth: '440px', margin: '0 auto', padding: '2rem 1rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👤</div>
+        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '0.4rem' }}>
+          ¿Quién responde?
+        </h2>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          Antes de comenzar <strong style={{ color: 'var(--color-accent-light)' }}>{quizTitle}</strong>, ingresa tu nombre completo.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <label htmlFor="student-name" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+            Nombre completo
+          </label>
+          <input
+            id="student-name"
+            type="text"
+            autoFocus
+            autoComplete="name"
+            placeholder="Ej. María González"
+            value={name}
+            onChange={e => { setName(e.target.value); if (error) setError(validate(e.target.value)); }}
+            style={{
+              padding: '0.75rem 1rem',
+              background: 'rgba(30,25,76,0.6)',
+              border: `1px solid ${error ? '#f87171' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--color-text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'inherit',
+              outline: 'none',
+              transition: 'border-color 0.15s',
+            }}
+            onFocus={e => { (e.target as HTMLInputElement).style.borderColor = 'var(--color-accent-light)'; }}
+            onBlur={e => { (e.target as HTMLInputElement).style.borderColor = error ? '#f87171' : 'var(--color-border)'; }}
+          />
+          {error && (
+            <span style={{ fontSize: '0.8rem', color: '#f87171' }}>{error}</span>
+          )}
+        </div>
+
+        <Button type="submit" style={{ marginTop: '0.5rem' }}>
+          Comenzar quiz →
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+// --- Vista de resultado ---
+
+function ResultView({ result, quizTitle, studentName }: { result: SubmitResult; quizTitle: string; studentName: string }) {
   const LEVEL_COLOR: Record<string, string> = {
     Avanzado: '#4233ce',
     Medio:    '#7f57ff',
@@ -227,7 +314,7 @@ function ResultView({ result, quizTitle }: { result: SubmitResult; quizTitle: st
       </div>
 
       <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-        Gracias por participar. Tu resultado ha sido registrado.
+        Gracias por participar, <strong style={{ color: 'var(--color-text-secondary)' }}>{studentName}</strong>. Tu resultado ha sido registrado.
       </div>
     </div>
   );
