@@ -32,6 +32,45 @@ export interface HistoricalResult extends QuizResult {
   quizTitle: string;
 }
 
+export interface Student {
+  id: string;
+  full_name: string;
+  name_key: string;
+  created_at: string;
+}
+
+export interface ResultRow {
+  session_id: string;
+  score: number;
+  level: string;
+  correct_answers: number;
+  total_questions: number;
+  time_spent_sec: number;
+  completed_at: string;
+  quiz_id: string;
+  quiz_title: string;
+  student_id: string | null;
+  student_name: string;
+}
+
+export interface StudentAttempt {
+  session_id: string;
+  quiz_id: string;
+  quiz_title: string;
+  score: number;
+  level: string;
+  correct_answers: number;
+  total_questions: number;
+  time_spent_sec: number;
+  completed_at: string;
+}
+
+export interface StudentHistory {
+  student: Student;
+  stats: { total_attempts: number; avg_score: number };
+  attempts: StudentAttempt[];
+}
+
 export interface ExcelRow {
   Pregunta: string;
   Opcion_A: string;

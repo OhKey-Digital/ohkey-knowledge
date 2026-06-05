@@ -94,6 +94,24 @@ export function validateRows(rows: ExcelRow[]): ValidationResult {
   return { valid: errors.length === 0, errors };
 }
 
+export function normalizeName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function validateStudentName(name: unknown): { valid: boolean; error?: string } {
+  if (typeof name !== 'string') return { valid: false, error: 'El nombre debe ser texto' };
+  const trimmed = name.trim();
+  if (trimmed.length < 3) return { valid: false, error: 'El nombre debe tener al menos 3 caracteres' };
+  if (trimmed.length > 120) return { valid: false, error: 'El nombre es demasiado largo (máximo 120 caracteres)' };
+  if (!/\s/.test(trimmed)) return { valid: false, error: 'Ingresa nombre y apellido' };
+  return { valid: true };
+}
+
 export function sanitizeString(value: unknown, maxLen = 500): string {
   if (value === null || value === undefined) return '';
   const MAP: Record<string, string> = {
