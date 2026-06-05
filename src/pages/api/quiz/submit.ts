@@ -2,11 +2,13 @@ import type { APIRoute } from 'astro';
 import { sql } from '../../../lib/db';
 import { buildFingerprint } from '../../../lib/fingerprint';
 import { determineLevel } from '../../../lib/quizLogic';
+import { validateStudentName, normalizeName, sanitizeString } from '../../../lib/validators';
 import type { AnswerKey } from '../../../types/quiz';
 
 interface SubmitBody {
   quizId: string;
   cookieToken: string;
+  studentName: string;
   answers: Array<{ questionId: string; selectedAnswer: AnswerKey | null; timeSpentMs: number }>;
   timeSpentSec: number;
 }
@@ -19,10 +21,15 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Cuerpo inválido' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
-  const { quizId, cookieToken, answers, timeSpentSec } = body;
+  const { quizId, cookieToken, studentName, answers, timeSpentSec } = body;
 
   if (!quizId || !cookieToken || !Array.isArray(answers) || answers.length === 0) {
     return new Response(JSON.stringify({ error: 'Datos incompletos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  const nameValidation = validateStudentName(studentName);
+  if (!nameValidation.valid) {
+    return new Response(JSON.stringify({ error: nameValidation.error }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
   const fingerprint = await buildFingerprint(request);
@@ -49,6 +56,18 @@ export const POST: APIRoute = async ({ request }) => {
     ? JSON.parse(quiz.answers_key)
     : quiz.answers_key;
 
+  // Upsert del estudiante por nombre normalizado
+  const fullName = sanitizeString(studentName.trim(), 120);
+  const nameKey = normalizeName(fullName);
+
+  const [student] = await sql`
+    INSERT INTO students (full_name, name_key)
+    VALUES (${fullName}, ${nameKey})
+    ON CONFLICT (name_key) DO UPDATE SET full_name = EXCLUDED.full_name
+    RETURNING id
+  `;
+  const studentId = student.id as string;
+
   // Crear o recuperar sesión incompleta
   let sessionId: string;
   const [existing] = await sql`
@@ -57,10 +76,11 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (existing) {
     sessionId = existing.id as string;
+    await sql`UPDATE sessions SET student_id = ${studentId} WHERE id = ${sessionId}`;
   } else {
     const [newSession] = await sql`
-      INSERT INTO sessions (quiz_id, cookie_token, fingerprint, ip_address)
-      VALUES (${quizId}, ${cookieToken}, ${fingerprint}, ${ip})
+      INSERT INTO sessions (quiz_id, cookie_token, fingerprint, ip_address, student_id)
+      VALUES (${quizId}, ${cookieToken}, ${fingerprint}, ${ip}, ${studentId})
       RETURNING id
     `;
     sessionId = newSession.id as string;
@@ -95,7 +115,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   await sql`UPDATE sessions SET completed = TRUE, completed_at = NOW() WHERE id = ${sessionId}`;
 
-  return new Response(JSON.stringify({ result, sessionId }), {
+  return new Response(JSON.stringify({ result, sessionId, studentName: fullName }), {
     status: 201,
     headers: { 'Content-Type': 'application/json' },
   });
